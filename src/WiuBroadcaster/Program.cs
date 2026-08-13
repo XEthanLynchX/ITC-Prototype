@@ -17,9 +17,9 @@ builder.Services.AddSingleton<SubscriptionRegistry>();
 builder.Services.AddSingleton<PendingChanges>();
 builder.Services.AddSingleton<FlushLog>();
 
-// BatchPublisher is resolved as a singleton first, then handed to the hosted-service
-// pipeline. AddHostedService<BatchPublisher>() alone would create a second, separate
-// instance, and POST /test/flush would then flush an object nobody is listening to.
+// Registered as a singleton first, then handed to the hosted-service pipeline.
+// AddHostedService<BatchPublisher>() alone would build a second instance, and
+// POST /test/flush would flush an object nobody is listening to.
 builder.Services.AddSingleton<BatchPublisher>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<BatchPublisher>());
 builder.Services.AddHostedService<WiuGenerator>();
@@ -31,9 +31,6 @@ app.UseStaticFiles();
 
 app.MapHub<WiuHub>("/hubs/wiu");
 
-// ---------------------------------------------------------------------------
-// Stage 5: make the registry visible.
-// ---------------------------------------------------------------------------
 
 app.MapGet("/debug", (
     SubscriptionRegistry registry,
@@ -58,9 +55,8 @@ app.MapGet("/debug/config", (Microsoft.Extensions.Options.IOptions<WiuOptions> o
     Results.Json(options.Value));
 
 // ---------------------------------------------------------------------------
-// Test control surface. These exist so a driver can make the system fully
-// deterministic: turn the random generator off, inject exactly the changes the
-// scenario calls for, and flush on demand instead of waiting five seconds.
+// Test control surface: lets a driver be deterministic — generator off, inject
+// exactly the changes a scenario needs, flush on demand instead of waiting.
 // ---------------------------------------------------------------------------
 
 app.MapPost("/test/change", async (ChangeRequest request, PendingChanges pending) =>
@@ -86,8 +82,7 @@ app.MapPost("/test/change", async (ChangeRequest request, PendingChanges pending
 app.MapPost("/test/flush", async (BatchPublisher publisher) =>
     Results.Json(await publisher.FlushAsync()));
 
-// The Vue client is a single-page app: anything that is not a real file and not one
-// of the API routes above falls back to index.html.
+// SPA fallback: anything that is not a real file or an API route above serves index.html.
 app.MapFallbackToFile("index.html");
 
 app.Run();

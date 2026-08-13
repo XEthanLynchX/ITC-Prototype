@@ -2,11 +2,9 @@ import { ref, reactive, shallowRef } from 'vue';
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
 /**
- * Wraps the SignalR connection in reactive state.
- *
- * Everything the UI renders lives here; the components are dumb. Deliberately not
- * a Pinia store — there is exactly one connection per tab and no cross-route state
- * to share, so a composable is the whole requirement.
+ * Wraps the SignalR connection in reactive state. Everything the UI renders lives here;
+ * the components are presentational. Not a Pinia store — one connection per tab and no
+ * cross-route state to share, so a composable covers it.
  */
 export function useWiuConnection() {
   const status = ref('disconnected');   // disconnected | connecting | connected | reconnecting
@@ -14,17 +12,16 @@ export function useWiuConnection() {
   const batchCount = ref(0);
   const connectionId = ref(null);
 
-  // Keyed by WIU id. reactive() rather than ref({}) so patching a single WIU does
-  // not replace the whole object and re-render every row.
+  // Keyed by WIU id. reactive() rather than ref({}) so patching one WIU does not
+  // replace the whole object and re-render every row.
   const wiuState = reactive({});
   const log = ref([]);
 
-  // The connection object itself must not be deep-reactive: Vue would walk the
-  // entire SignalR internals and proxy them, which breaks the transport.
+  // Must not be deep-reactive: Vue would proxy SignalR's internals and break the transport.
   const connection = shallowRef(null);
 
-  // What this tab *wants*. Kept separate from `group` (what the server actually
-  // put us in) so a reconnect can re-declare it without asking the DOM.
+  // What this tab *wants*, kept separate from `group` (where the server actually put
+  // us) so a reconnect can re-declare it without reading the DOM.
   let desiredWius = [];
 
   function addLog(message) {
@@ -48,8 +45,8 @@ export function useWiuConnection() {
       .build();
 
     // Handlers must not return a value. An expression-bodied arrow like
-    // (b) => Object.assign(wiuState, b) returns the object, and the SignalR client
-    // reports it as the result of an invocation the server never made:
+    // (b) => Object.assign(wiuState, b) returns the object, which SignalR reports as the
+    // result of an invocation the server never made:
     // "Result given for 'receivewiubatch' method but server is not expecting a result."
     conn.on('ReceiveWiuBatch', (batch) => {
       batchCount.value++;
@@ -57,8 +54,8 @@ export function useWiuConnection() {
       addLog(`batch: ${Object.keys(batch).sort().join(', ')}`);
     });
 
-    // A snapshot replaces local state instead of merging into it, so WIUs from a
-    // previous layout do not linger in the table after a subscription change.
+    // Snapshots replace local state rather than merging, so WIUs from a previous layout
+    // do not linger after a subscription change.
     conn.on('ReceiveSnapshot', (snapshot) => {
       replaceState(snapshot);
       addLog(`snapshot: ${Object.keys(snapshot).sort().join(', ') || '(empty)'}`);
@@ -74,8 +71,8 @@ export function useWiuConnection() {
       addLog('reconnecting...');
     });
 
-    // Group membership does not survive a reconnect — the connection id is new, so
-    // the client has to re-declare what it wants or it will sit silent forever.
+    // Group membership does not survive a reconnect — the connection id is new, so the
+    // client must re-declare what it wants or sit silent forever.
     conn.onreconnected(async () => {
       status.value = 'connected';
       connectionId.value = conn.connectionId;
@@ -121,7 +118,7 @@ export function useWiuConnection() {
     }
   }
 
-  /** Leave the group without disconnecting — what a hidden browser tab does. */
+  /** Leave the group without disconnecting — what a hidden tab does. */
   async function leaveGroup() {
     const conn = connection.value;
     if (!conn || conn.state !== HubConnectionState.Connected) return;

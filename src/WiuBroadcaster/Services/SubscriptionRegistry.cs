@@ -3,9 +3,8 @@ using System.Collections.Concurrent;
 namespace WiuBroadcaster.Services;
 
 /// <summary>
-/// The in-memory subscription registry: the only place that knows which SignalR
-/// group name corresponds to which set of WIUs, and which groups care about a
-
+/// The only place that knows which SignalR group maps to which set of WIUs, and which
+/// groups care about a given WIU. Process-local by design — no Redis, no SQL, one server.
 /// </summary>
 public class SubscriptionRegistry
 {
@@ -22,7 +21,8 @@ public class SubscriptionRegistry
     private readonly ConcurrentDictionary<string, string> _connectionToGroup = new();
 
     /// <summary>
-    /// Deduplicate, sort, and render the WIU list as a readable group name.
+    /// Dedupe, sort, and render the WIU list as a group name. Deliberately not hashed:
+    /// "subscription:WIU-101|WIU-103" debugs better than an opaque digest.
     /// </summary>
     public static string BuildGroupName(IEnumerable<string> wiuIds)
     {
@@ -41,8 +41,8 @@ public class SubscriptionRegistry
             .ToArray();
 
     /// <summary>
-    /// Point a connection at a new set of WIUs. Returns the group it left (if any)
-    /// and the group it joined, so the hub knows which SignalR group calls to make.
+    /// Point a connection at a new set of WIUs. Returns the group it left and the one
+    /// it joined, so the hub knows which SignalR group calls to make.
     /// </summary>
     public (string? LeftGroup, string JoinedGroup, string[] Wius) Subscribe(
         string connectionId,
@@ -54,8 +54,8 @@ public class SubscriptionRegistry
         var leftGroup = RemoveConnection(connectionId);
         if (leftGroup == groupName)
         {
-            // Re-subscribing to the identical set: we still re-add below, so the
-            // caller can safely issue AddToGroupAsync again (it is idempotent).
+            // Re-subscribing to the identical set: skip the leave, since the re-add
+            // below is idempotent.
             leftGroup = null;
         }
 
@@ -72,9 +72,8 @@ public class SubscriptionRegistry
     }
 
     /// <summary>
-    /// Drop a connection from whatever group it was in. When the last connection
-    /// leaves, the group and its reverse-index entries are torn down so the
-    /// registry does not accumulate dead subscription groups.
+    /// Drop a connection from its group. When the last one leaves, the group and its
+    /// reverse-index entries are torn down so dead groups do not accumulate.
     /// </summary>
     public string? RemoveConnection(string connectionId)
     {
@@ -127,7 +126,7 @@ public class SubscriptionRegistry
 
     public int GroupCount => _groupToWius.Count;
 
-    /// <summary>Flattened snapshot for the /debug endpoint and the driver's assertions.</summary>
+    /// <summary>Flattened view for /debug and the driver's assertions.</summary>
     public RegistrySnapshot Snapshot() => new(
         ConnectionCount,
         GroupCount,

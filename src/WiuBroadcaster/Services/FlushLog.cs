@@ -3,9 +3,8 @@ using System.Collections.Concurrent;
 namespace WiuBroadcaster.Services;
 
 /// <summary>
-/// Ring buffer of recent flushes. The console log scrolls away; this is what
-/// /debug and the driver read to prove a specific flush routed a specific WIU
-/// to a specific group.
+/// Ring buffer of recent flushes. The console scrolls away; this is what /debug and the
+/// driver read to prove a given flush routed a given WIU to a given group.
 /// </summary>
 public class FlushLog
 {
@@ -23,13 +22,13 @@ public class FlushLog
     {
         _records.Enqueue(record);
 
-        while (_records.Count > Capacity && _records.TryDequeue(out _))
+        while (_records.Count > Capacity)
         {
-            // trim
+            _records.TryDequeue(out _);
         }
     }
 
-    /// <summary>Most recent flush first — the order a human debugging wants.</summary>
+    /// <summary>Most recent first — the order a human debugging wants.</summary>
     public FlushRecord[] Recent() => _records.Reverse().ToArray();
 }
 

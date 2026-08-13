@@ -4,9 +4,9 @@ using WiuBroadcaster.Models;
 namespace WiuBroadcaster.Services;
 
 /// <summary>
-/// Stage 3: mutates one random WIU on a fast timer and drops the result into
-/// PendingChanges. It deliberately does not touch IHubContext — everything a
-/// client sees goes through the five-second publisher.
+/// mutates one random WIU on a fast timer and drops the result into
+/// PendingChanges. Deliberately never touches IHubContext — everything a client sees
+/// goes through the publisher.
 /// </summary>
 public class WiuGenerator : BackgroundService
 {

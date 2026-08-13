@@ -12,8 +12,8 @@ const {
   start, stop, applySubscription, leaveGroup, rejoinGroup,
 } = useWiuConnection();
 
-// Fetched rather than hard-coded, so adding a WIU to appsettings.json shows up in
-// the UI without touching the client.
+// Fetched, not hard-coded, so a WIU added to appsettings.json shows up without
+// touching the client.
 const available = ref([]);
 const selected = ref(['WIU-101', 'WIU-102']);
 const leaveWhenHidden = ref(false);

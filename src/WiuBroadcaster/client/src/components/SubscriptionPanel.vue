@@ -10,8 +10,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selected', 'apply', 'clear']);
 
-// The group name the server *will* derive, mirrored client-side so the effect of
-// ticking a box is visible before Apply is pressed.
+// Mirrors the group name the server will derive, so ticking a box shows its effect
+// before Apply is pressed.
 const previewGroup = computed(() => {
   const wius = [...props.selected].sort();
   return wius.length ? `subscription:${wius.join('|')}` : 'subscription:none';

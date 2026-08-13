@@ -28,8 +28,8 @@ const rows = computed(() =>
         <tr v-if="rows.length === 0">
           <td colspan="4" class="empty">no data yet</td>
         </tr>
-        <!-- Keyed by WIU id so Vue patches the row in place rather than rebuilding
-             the table, which is the same by-id patching the server's batches assume. -->
+        <!-- Keyed by WIU id so Vue patches rows in place — the same by-id patching
+             the server's batches assume. -->
         <tr v-for="row in rows" :key="row.wiuId">
           <td>{{ row.wiuId }}</td>
           <td :class="`aspect-${row.aspect}`">{{ row.aspect }}</td>

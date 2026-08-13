@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import PanelBox from './PanelBox.vue';
 
 const props = defineProps({
-  // The server's group name for this tab, so its own row can be highlighted.
+  // This tab's group, so its own row can be highlighted.
   myGroup: { type: String, default: '(none)' },
 });
 
@@ -21,8 +21,8 @@ async function poll() {
   }
 }
 
-// Polling, not pushing: the registry view is a debugging aid, and giving it its own
-// SignalR channel would mean the thing being observed changes what it observes.
+// Polling, not pushing: this is a debugging aid, and giving it its own SignalR channel
+// would make the observer alter what it observes.
 onMounted(() => {
   poll();
   timer = setInterval(poll, 2000);

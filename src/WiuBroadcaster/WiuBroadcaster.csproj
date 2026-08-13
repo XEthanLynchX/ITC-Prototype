@@ -14,11 +14,9 @@
   </ItemGroup>
 
   <!--
-    Build the Vue client as part of `dotnet build`, so `dotnet run` serves a working
-    page with no separate npm step. Incremental via Inputs/Outputs: the npm build is
-    skipped entirely when no client source has changed since wwwroot/index.html was
-    written. Pass -p:SkipClientBuild=true to bypass (e.g. when only C# changed and
-    node is unavailable).
+    Builds the Vue client during `dotnet build`, so `dotnet run` serves a working page
+    with no separate npm step. Inputs/Outputs make it incremental: skipped when no
+    client source changed. Pass -p:SkipClientBuild=true to bypass.
   -->
   <Target Name="BuildVueClient"
           BeforeTargets="Build"

@@ -17,9 +17,9 @@ public class WiuHub : Hub<IWiuClient>
     }
 
     /// <summary>
-    /// The only entry point. The client sends the WIUs it wants; the server derives
-    /// the group name, moves the connection, and immediately answers with a snapshot
-    /// so the client is not blank until the next five-second flush.
+    /// The main entry point. The client sends the WIUs it wants; the server derives the
+    /// group name, moves the connection, and answers with a snapshot so the client is
+    /// not blank until the next flush.
     /// </summary>
     public async Task Subscribe(string[] wiuIds)
     {
@@ -42,10 +42,7 @@ public class WiuHub : Hub<IWiuClient>
         await Clients.Caller.ReceiveSnapshot(_pending.SnapshotFor(wius));
     }
 
-    /// <summary>
-    /// Leave the current subscription group without disconnecting — what a browser
-    /// tab does when it is hidden.
-    /// </summary>
+    /// <summary>Leave the group without disconnecting — what a hidden browser tab does.</summary>
     public async Task Unsubscribe()
     {
         var leftGroup = _registry.RemoveConnection(Context.ConnectionId);
@@ -59,7 +56,7 @@ public class WiuHub : Hub<IWiuClient>
         await Clients.Caller.SubscriptionChanged("(none)", Array.Empty<string>());
     }
 
-    /// <summary>Lets a client label itself in /debug output. Purely a debugging aid.</summary>
+    /// <summary>Lets a client label itself in /debug output. Debugging aid only.</summary>
     public Task<string> WhoAmI() => Task.FromResult(Context.ConnectionId);
 
     public override Task OnConnectedAsync()

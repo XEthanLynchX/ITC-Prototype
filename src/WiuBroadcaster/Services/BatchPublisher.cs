@@ -6,10 +6,9 @@ using WiuBroadcaster.Models;
 namespace WiuBroadcaster.Services;
 
 /// <summary>
-/// Stage 4: the piece the whole practice app exists to demonstrate. Wakes on a
-/// timer, drains the coalescing buffer, asks the registry which groups care about
-/// each changed WIU, and publishes one filtered batch per group through
-/// IHubContext — publishing to clients from outside the hub.
+/// the piece this app exists to demonstrate. On each tick: drain the
+/// buffer, ask the registry which groups care about each changed WIU, and publish one
+/// filtered batch per group through IHubContext — sending to clients from outside the hub.
 /// </summary>
 public class BatchPublisher : BackgroundService
 {
@@ -48,16 +47,16 @@ public class BatchPublisher : BackgroundService
             }
             catch (Exception ex)
             {
-                // A throw here would kill the BackgroundService and silently stop
-                // every future flush, so failures are logged and the loop continues.
+                // A throw here would kill the BackgroundService and silently stop every
+                // future flush, so log and keep looping.
                 _logger.LogError(ex, "Flush failed");
             }
         }
     }
 
     /// <summary>
-    /// One flush cycle. Public so POST /test/flush can force it on demand instead
-    /// of a driver sleeping through a five-second window.
+    /// One flush cycle. Public so POST /test/flush can force it on demand instead of a
+    /// driver sleeping through the whole window.
     /// </summary>
     public async Task<FlushRecord> FlushAsync()
     {

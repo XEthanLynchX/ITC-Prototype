@@ -4,16 +4,16 @@ using WiuBroadcaster.Models;
 namespace WiuBroadcaster.Services;
 
 /// <summary>
-/// The coalescing buffer between the generator and the publisher. Keyed by WIU id,
-/// so a WIU that changes ten times inside one flush window still ships exactly one
-/// update — its latest state. That collapse is the whole point of the buffer.
+/// The coalescing buffer between generator and publisher. Keyed by WIU id, so a WIU
+/// that changes ten times in one flush window ships one update carrying its latest
+/// state. That collapse is the point.
 /// </summary>
 public class PendingChanges
 {
     private readonly ConcurrentDictionary<string, WiuUpdate> _pending = new();
 
-    // Latest known state of every WIU, kept forever so a newly subscribed client
-    // can be handed a snapshot instead of waiting up to a full flush window.
+    // Latest state of every WIU, kept forever so a new subscriber gets a snapshot
+    // instead of waiting out a full flush window.
     private readonly ConcurrentDictionary<string, WiuUpdate> _lastKnown = new();
 
     private long _sequence;
@@ -29,9 +29,8 @@ public class PendingChanges
     public int PendingCount => _pending.Count;
 
     /// <summary>
-    /// Atomically drain the buffer. Uses TryRemove per key rather than Clear() so a
-    /// change written by the generator mid-drain is either taken by this flush or
-    /// left for the next one — never silently dropped, which Clear() would allow.
+    /// Drain the buffer. TryRemove per key rather than Clear(), so a change written
+    /// mid-drain is either taken now or left for the next flush — Clear() could drop it.
     /// </summary>
     public Dictionary<string, WiuUpdate> TakeAll()
     {
