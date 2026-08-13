@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  --bg: #12151a;
+  --panel: #171b22;
+  --border: #2b323c;
+  --text: #d7dde5;
+  --muted: #7d8894;
+  --accent: #8fb4e3;
+  --ok: #6cc47f;
+  --warn: #e3c05c;
+  --alert: #e09a4e;
+  --bad: #e0685f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  font: 14px/1.5 ui-monospace, "Cascadia Code", Consolas, monospace;
+  background: var(--bg);
+  color: var(--text);
+}
+
+h1 { font-size: 18px; margin: 0 0 4px; }
+
+button {
+  font: inherit;
+  background: #223049;
+  color: #cfe0f5;
+  border: 1px solid #3c4d6b;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin: 4px 4px 0 0;
+}
+button:hover:not(:disabled) { background: #2c3f5f; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+code { color: var(--accent); }
