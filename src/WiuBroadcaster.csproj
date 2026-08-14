@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>WiuBroadcaster</RootNamespace>
+  </PropertyGroup>
+
+  <!-- wwwroot is Vite build output. Never edit it and never commit it. -->
+  <ItemGroup>
+    <Content Remove="wwwroot\**" />
+    <None Include="client\**" Exclude="client\node_modules\**;client\dist\**" />
+  </ItemGroup>
+
+  <!--
+    Builds the Vue client during `dotnet build`, so `dotnet run` serves a working page
+    with no separate npm step. Inputs/Outputs make it incremental: skipped when no
+    client source changed. Pass -p:SkipClientBuild=true to bypass.
+  -->
+  <Target Name="BuildVueClient"
+          BeforeTargets="Build"
+          Condition="'$(SkipClientBuild)' != 'true'"
+          Inputs="@(None);client\package.json;client\vite.config.js"
+          Outputs="wwwroot\index.html">
+
+    <Message Importance="high" Text="Building Vue client..." />
+
+    <!-- npm ci needs a lockfile; fall back to npm install on a fresh clone. -->
+    <Exec Command="npm ci"
+          WorkingDirectory="client"
+          Condition="!Exists('client\node_modules') And Exists('client\package-lock.json')" />
+    <Exec Command="npm install"
+          WorkingDirectory="client"
+          Condition="!Exists('client\node_modules') And !Exists('client\package-lock.json')" />
+
+    <Exec Command="npm run build" WorkingDirectory="client" />
+  </Target>
+
+</Project>
